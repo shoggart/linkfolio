@@ -1,0 +1,34 @@
+# Development Dockerfile for LinkFolio
+# Optimized for hot reloading and fast iteration
+
+FROM node:20-alpine
+
+# Install dependencies
+RUN apk add --no-cache libc6-compat openssl
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install all dependencies (including devDependencies)
+RUN npm install
+
+# Copy Prisma schema
+COPY prisma ./prisma/
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Copy the rest of the application
+COPY . .
+
+# Expose the port
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Start the development server
+CMD ["npm", "run", "dev"]

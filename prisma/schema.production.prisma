@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String?
+  username      String    @unique
+  bio           String?
+  avatarUrl     String?
+
+  // Subscription
+  plan          String    @default("free") // free, pro
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  stripePriceId        String?
+  stripeCurrentPeriodEnd DateTime?
+
+  // Profile Settings
+  theme         String    @default("default")
+  backgroundColor String  @default("#ffffff")
+  buttonStyle   String    @default("rounded")
+  fontFamily    String    @default("inter")
+
+  // Social Links
+  socialLinks   SocialLink[]
+
+  // Bio Links
+  links         Link[]
+
+  // Analytics
+  profileViews  ProfileView[]
+  linkClicks    LinkClick[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([username])
+  @@index([email])
+}
+
+model SocialLink {
+  id        String   @id @default(cuid())
+  platform  String
+  url       String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order     Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Link {
+  id          String   @id @default(cuid())
+  title       String
+  url         String
+  thumbnail   String?
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  clicks      LinkClick[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, isActive])
+}
+
+model ProfileView {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  referrer  String?
+  country   String?
+  device    String?
+  browser   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}
+
+model LinkClick {
+  id        String   @id @default(cuid())
+  linkId    String
+  link      Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  referrer  String?
+  country   String?
+  device    String?
+  browser   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([linkId])
+  @@index([userId])
+  @@index([userId, createdAt])
+}

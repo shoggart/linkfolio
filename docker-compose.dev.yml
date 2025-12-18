@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # Development Next.js application with hot reload
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        - NODE_ENV=development
+    container_name: linkfolio-dev
+    ports:
+      - "3000:3000"
+    environment:
+      # Database
+      - DATABASE_URL=file:/app/data/dev.db
+      # Auth Secret
+      - AUTH_SECRET=${AUTH_SECRET:-dev-secret-key-not-for-production}
+      # App URL
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      # Stripe
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+      - STRIPE_PRO_MONTHLY_PRICE_ID=${STRIPE_PRO_MONTHLY_PRICE_ID}
+      - STRIPE_PRO_YEARLY_PRICE_ID=${STRIPE_PRO_YEARLY_PRICE_ID}
+      # Development
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+      # Mount database directory
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - linkfolio-network
+    stdin_open: true
+    tty: true
+
+  # Optional: PostgreSQL for development
+  # postgres:
+  #   image: postgres:16-alpine
+  #   container_name: linkfolio-postgres-dev
+  #   environment:
+  #     - POSTGRES_USER=linkfolio
+  #     - POSTGRES_PASSWORD=linkfolio_dev_password
+  #     - POSTGRES_DB=linkfolio_dev
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres-dev-data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U linkfolio"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - linkfolio-network
+
+  # Adminer for database management
+  adminer:
+    image: adminer:latest
+    container_name: linkfolio-adminer
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - linkfolio-network
+
+networks:
+  linkfolio-network:
+    driver: bridge
+
+volumes:
+  # postgres-dev-data:
