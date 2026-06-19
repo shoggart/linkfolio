@@ -28,7 +28,7 @@ async function getStats(userId: string) {
     linkCount,
     recentViews,
     recentClicks,
-    ctr: totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : '0',
+    ctr: totalViews > 0 ? (totalClicks / totalViews).toFixed(2) : '0',
   }
 }
 
@@ -140,9 +140,9 @@ export default async function DashboardPage() {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Click Rate</p>
+              <p className="text-sm text-gray-500">Clicks / View</p>
               <p className="text-3xl font-bold text-gray-900 mt-1">
-                {stats.ctr}%
+                {stats.ctr}×
               </p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, GripVertical, Trash2, ExternalLink, Loader2, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, ChevronUp, ChevronDown, Trash2, ExternalLink, Loader2, ToggleLeft, ToggleRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface Link {
@@ -90,6 +90,34 @@ export default function LinksPage() {
       fetchLinks()
     } catch {
       toast.error('Failed to update link')
+    }
+  }
+
+  const handleMove = async (index: number, direction: 'up' | 'down') => {
+    const target = direction === 'up' ? index - 1 : index + 1
+    if (target < 0 || target >= links.length) return
+
+    // Swap locally and update optimistically
+    const reordered = [...links]
+    const temp = reordered[index]
+    reordered[index] = reordered[target]
+    reordered[target] = temp
+    setLinks(reordered)
+
+    try {
+      const res = await fetch('/api/links/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          links: reordered.map((link, i) => ({ id: link.id, order: i })),
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to reorder')
+      const data = await res.json()
+      setLinks(data.links)
+    } catch {
+      toast.error('Failed to reorder links')
+      fetchLinks() // revert to server order
     }
   }
 
@@ -195,13 +223,28 @@ export default function LinksPage() {
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
-            {links.map((link) => (
+            {links.map((link, index) => (
               <div
                 key={link.id}
                 className={`flex items-center gap-4 p-4 ${!link.isActive ? 'opacity-50' : ''}`}
               >
-                <div className="cursor-move text-gray-400 hover:text-gray-600">
-                  <GripVertical className="w-5 h-5" />
+                <div className="flex flex-col -my-1">
+                  <button
+                    onClick={() => handleMove(index, 'up')}
+                    disabled={index === 0}
+                    className="text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    title="Move up"
+                  >
+                    <ChevronUp className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleMove(index, 'down')}
+                    disabled={index === links.length - 1}
+                    className="text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    title="Move down"
+                  >
+                    <ChevronDown className="w-5 h-5" />
+                  </button>
                 </div>
 
                 <div className="flex-1 min-w-0">

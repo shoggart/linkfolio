@@ -98,7 +98,7 @@ export default function HomePage() {
             </div>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight mb-6">
               One Link to Share
-              <span className="block bg-gradient-to-r from-primary-500 to-purple-600 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-primary-500 to-purple-600 bg-clip-text text-transparent pb-2">
                 Everything That Matters
               </span>
             </h1>

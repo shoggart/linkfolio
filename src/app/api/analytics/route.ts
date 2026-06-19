@@ -144,7 +144,7 @@ export async function GET(req: NextRequest) {
         clicks: totalClicks,
         viewsTrend,
         clicksTrend,
-        ctr: totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : '0'
+        ctr: totalViews > 0 ? (totalClicks / totalViews).toFixed(2) : '0'
       },
       topLinks
     })
